@@ -1808,6 +1808,7 @@ classdef Dataset
             elseif ~isa(file, 'matlab.io.MatFile')
                 error('Wrong file parameter')
             end
+            writeSuccess = false;
             for tries = 1:10
                 if file.isWriting
                     pause(rand*10);
@@ -1820,8 +1821,12 @@ classdef Dataset
                         rethrow(ME);
                     end
                     file.isWriting = 0;
+                    writeSuccess = true;
                     break
                 end
+            end
+            if ~writeSuccess
+                error("Writiing to file failed due to max number of attempts reached")
             end
         end
         
