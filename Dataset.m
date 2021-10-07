@@ -132,6 +132,25 @@ classdef Dataset
         %%% Basic operations methods
         %------------------------------------------
         
+        function varargout = subsref(self, s)
+            % overload dot-indexing, so that we can reference object's
+            % properties without having to type the word object, i.e.
+            % d.period (d.p), instead of d.object.period
+            if strcmp(s(1).type, '.') && ~isprop(self, s(1).subs) && ~ismethod(self, s(1).subs)
+                s(1).subs = self.object.substituteShortNames(s(1).subs);
+                if isprop(self.object, s(1).subs)
+                    varargout = cellfun(@(x)subsref(x,s(1)),{self.object},'UniformOutput',false);
+                    s = s(2:end);
+                end
+                if ~isempty(s)
+                    [varargout{:}] = cellfun(@(x)subsref(x,s), varargout, 'UniformOutput', false);
+                end
+            else
+                varargout = cell(1, nargout);
+                [varargout{:}] = builtin('subsref', self, s);
+            end
+        end
+        
         function self = append(self, data, force)
         % case 1: data - object, array, or cell arry of objects of class Optimizer
         % case 2: data - struct with (at least some of) the same fields as Dataset
