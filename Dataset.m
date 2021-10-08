@@ -146,7 +146,11 @@ classdef Dataset
                     [varargout{:}] = cellfun(@(x)subsref(x,s), varargout, 'UniformOutput', false);
                 end
             else
-                varargout = cell(1, nargout);
+                if any(strcmp({s.type}, '.')) % fix for function call with no arguments
+                    varargout = cell(1, nargout);
+                else
+                    varargout = cell(1, max(1,nargout));
+                end
                 [varargout{:}] = builtin('subsref', self, s);
             end
         end
