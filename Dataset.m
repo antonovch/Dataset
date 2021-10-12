@@ -136,7 +136,7 @@ classdef Dataset
             % overload dot-indexing, so that we can reference object's
             % properties without having to type the word object, i.e.
             % d.period (d.p), instead of d.object.period
-            if strcmp(s(1).type, '.') && ~isprop(self, s(1).subs) && ~ismethod(self, s(1).subs)
+            if strcmp(s(1).type, '.') && ~isprop(self(1), s(1).subs) && ~ismethod(self, s(1).subs)
                 s(1).subs = self.object.substituteShortNames(s(1).subs);
                 if isprop(self.object, s(1).subs)
                     varargout = cellfun(@(x)subsref(x,s(1)),{self.object},'UniformOutput',false);
@@ -151,7 +151,19 @@ classdef Dataset
                 else
                     varargout = cell(1, max(1,nargout));
                 end
-                [varargout{:}] = builtin('subsref', self, s);
+                try
+                    [varargout{:}] = builtin('subsref', self, s);
+                catch ME
+                    if strcmp(ME.identifier,'MATLAB:TooManyOutputs') 
+                        try 
+                            builtin('subsref', self, s);
+                        catch 
+                            rethrow(ME)
+                        end
+                    else
+                        rethrow(ME)
+                    end
+                end
             end
         end
         
