@@ -147,7 +147,8 @@ classdef Dataset
                 end
             else
                 f = find(strcmp({s.type}, '.'));
-                if ~isempty(f) && ismethod(self, s(f).subs) % fix for function call with no arguments
+                % fix for function call with no arguments
+                if ~isempty(f) && any(cellfun(@(m)ismethod(self,m),{s(f).subs})) 
                     varargout = cell(1, nargout);
                 else
                     varargout = cell(1, max(1,nargout));
@@ -216,7 +217,8 @@ classdef Dataset
                     % check for potential interpolation candidates
                     I = cellfun(@(x) isequal(self.wavelength([1 end]), x([1 end])), {data.wavelength});
                     % make sure that other than the wavelength objects are equal
-                    II = cellfun(@(x) eq(set(self.object, 'wl', []), set(x, 'wl', []), false), {data.object});
+                    II = cellfun(@(x) eq(set(self.object, 'wavelength', []), ...
+                        set(x, 'wavelength', []), false), {data.object});
                     I = find(I & II);
                     if I
                         % act according to force on the first match
@@ -1027,7 +1029,7 @@ classdef Dataset
         % where image 1 will be the one that will be kept, all other -
         % removed.
         
-            shift = d.object.sym(1:2)/2;
+            shift = d.object.symmetry(1:2)/2;
             shift = shift(:).'; % just in case
             if all(shift == 0)
                 % the case of no symmetry. For symmetric case it's a bit of
@@ -1043,7 +1045,7 @@ classdef Dataset
                 end
                 check = ~check;
             else
-                if ~any(shift == 0) && d.object.sym(3) % both symmetries w/ diagonal
+                if ~any(shift == 0) && d.object.symmetry(3) % both symmetries w/ diagonal
                     shift = [diag(shift); shift];
                 end
                 check = false(d.numdev);
@@ -1104,7 +1106,7 @@ classdef Dataset
                                 tmp = d(i).(props{j});
                                 d(i).(props{j}) = tmp(:,i,:,:);
                             end
-                            d(i).object.pol = i;
+                            d(i).object.polarization = i;
                         end
                     end
                     if ~isa(d,'StartDataset')
