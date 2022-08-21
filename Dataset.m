@@ -1495,7 +1495,9 @@ classdef Dataset
             for ii = 1:length(p)
                 switch class(p{ii})
                     case 'double'
-                        p{ii} = gen_patt(self.object, p{ii});
+                        if isvector(p{ii})
+                            p{ii} = p2patt(self.object, self.object.u2p(p{ii}));
+                        end
                     case 'logical'
                         p{ii} = double(p{ii});
                     case 'function_handle'
